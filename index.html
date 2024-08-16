@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Map of Ukraine</title>
+    <script src="./d3.v6.min.js"></script>
+</head>
+
+<body>
+    <svg width="900" height="700" id="ukraineMap"></svg>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const width = 800, height = 600;
+
+            // Create SVG element
+            const svg = d3.select("#ukraineMap");
+
+            // Define map projection
+            const projection = d3.geoMercator()
+                .center([31.1656, 48.3794]) // Centered on Ukraine
+                .scale(2500)
+                .translate([width / 2 + 20, height / 2 + 20]);
+
+            // Define path generator
+            const path = d3.geoPath()
+                .projection(projection);
+
+            // Load GeoJSON data
+            d3.json("./UA_FULL_Ukraine.geojson").then(function (ukraine) {
+                // Draw each region
+                svg.selectAll("path")
+                    .data(ukraine.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", path)
+                    .style("fill", "lightgray")
+                    .style("stroke", "black");
+
+                // Coordinates of major cities
+                const cities = [
+                    { name: "Kyiv", coordinates: [30.5238, 50.4547] },
+                    { name: "Lviv", coordinates: [24.0297, 49.8397] },
+                    { name: "Lutsk", coordinates: [25.3244, 50.7472] },
+                    { name: "Odessa", coordinates: [30.7326, 46.4825] },
+                    { name: "Kharkiv", coordinates: [36.2304, 49.9935] },
+                    { name: "Dnipro", coordinates: [35.0462, 48.4647] },
+                    { name: "Zaporizhzhia", coordinates: [35.1396, 47.8388] },
+                    { name: "Donetsk", coordinates: [37.8057, 48.0159] },
+                    { name: "Luhansk", coordinates: [39.3078, 48.5758] },
+                    { name: "Vinnytsia", coordinates: [28.4826, 49.2328] },
+                    { name: "Kherson", coordinates: [32.6178, 46.6354] },
+                    { name: "Chernihiv", coordinates: [31.2849, 51.4982] },
+                    { name: "Ivano-Frankivsk", coordinates: [24.7097, 48.9226] },
+                    { name: "Chernivtsi", coordinates: [25.9403, 48.2915] },
+                    { name: "Sumy", coordinates: [34.8015, 50.9077] },
+                    { name: "Ternopil", coordinates: [25.6190, 49.5535] },
+                    { name: "Rivne", coordinates: [26.2516, 50.6199] },
+                    { name: "Zhytomyr", coordinates: [28.6587, 50.2547] },
+                    { name: "Uzhhorod", coordinates: [22.2879, 48.6208] },
+                    { name: "Poltava", coordinates: [34.5514, 49.5883] },
+                    { name: "Cherkasy", coordinates: [32.0621, 49.4444] },
+                    { name: "Khmelnytskyi", coordinates: [26.9883, 49.4216] },
+                    { name: "Kropyvnytskyi", coordinates: [32.2630, 48.5079] },
+                    { name: "Mykolaiv", coordinates: [31.9954, 46.9750] },
+                    { name: "Simferopol", coordinates: [34.1091, 44.9521] },
+                ];
+
+                // Draw Voronoi
+                const voronoi = d3.Delaunay.from(cities.map(d => projection(d.coordinates))).voronoi([0, 0, width, height]);
+                svg.append("path")
+                    .attr("d", voronoi.render())
+                    .style("fill", "none")
+                    .style("stroke", "red");
+
+                // Place city labels
+                svg.selectAll("text")
+                    .data(cities)
+                    .enter()
+                    .append("text")
+                    .attr("x", d => projection(d.coordinates)[0])
+                    .attr("y", d => projection(d.coordinates)[1])
+                    .text(d => d.name)
+                    .attr("font-size", "10px")
+                    .attr("font-family", "Arial")
+                    .attr("fill", "blue")
+                    .attr("text-anchor", "middle");
+            });
+        });
+
+    </script>
+</body>
+
+</html>
